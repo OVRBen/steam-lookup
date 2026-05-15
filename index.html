@@ -626,29 +626,22 @@ If not found: {"found":false}`;
     document.getElementById('hs-loading-msg').textContent = 'Searching HubSpot...';
 
     try {
-      // Search deals by name within our pipeline
-      const resp = await fetch('https://api.hubapi.com/crm/v3/objects/deals/search', {
+      // Search deals via local proxy
+      const resp = await fetch('http://localhost:8765', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + hsKey
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          filterGroups: [{
-            filters: [
-              { propertyName: 'dealname', operator: 'CONTAINS_TOKEN', value: query },
-              { propertyName: 'pipeline', operator: 'EQ', value: PIPELINE_ID }
-            ]
-          }],
-          properties: ['dealname', 'dealstage', 'pipeline', 'closedate'],
-          limit: 5
+          action: 'search',
+          hsToken: hsKey,
+          pipelineId: PIPELINE_ID,
+          query: query
         })
       });
 
       const data = await resp.json();
       document.getElementById('hs-loading').style.display = 'none';
 
-      if (!resp.ok) throw new Error(data.message || `HubSpot error ${resp.status}`);
+      if (!resp.ok) throw new Error(data.message || data.error || `HubSpot error ${resp.status}`);
 
       if (!data.results || data.results.length === 0) {
         showHsError(`No deals found matching "${query}" in your pipeline. Check the deal name in HubSpot.`);
@@ -688,13 +681,15 @@ If not found: {"found":false}`;
     }
 
     try {
-      const resp = await fetch(`https://api.hubapi.com/crm/v3/objects/deals/${currentDeal.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + hsKey
-        },
-        body: JSON.stringify({ properties })
+      const resp = await fetch('http://localhost:8765', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          hsToken: hsKey,
+          dealId: currentDeal.id,
+          properties: properties
+        })
       });
 
       const data = await resp.json();
