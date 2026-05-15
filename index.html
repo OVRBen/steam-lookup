@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Steam Partner Lookup — OVR Technology</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f4f0;
+    color: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .container { width: 100%; max-width: 720px; }
+
+  .header { margin-bottom: 2rem; }
+  .header h1 { font-size: 20px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: #666; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #e5e3dd;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  .card-collapsible .card-title {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+  }
+
+  .card-collapsible .card-title.open { margin-bottom: 1rem; }
+  .card-collapsible .card-body { display: none; }
+  .card-collapsible .card-body.open { display: block; }
+
+  label { font-size: 12px; color: #555; display: block; margin-bottom: 5px; }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #888;
+    background: #fff;
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 480px) { .input-row { grid-template-columns: 1fr; } }
+
+  button {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  button:hover { background: #f5f4f0; border-color: #aaa; }
+  button:active { transform: scale(0.98); }
+
+  .btn-primary {
+    width: 100%;
+    background: #1a1a1a;
+    color: #fff;
+    border-color: #1a1a1a;
+  }
+
+  .btn-primary:hover { background: #333; border-color: #333; }
+  .btn-primary:disabled { background: #999; border-color: #999; cursor: not-allowed; transform: none; }
+
+  .btn-hubspot {
+    flex: 1;
+    background: #ff7a59;
+    color: #fff;
+    border-color: #ff7a59;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .btn-hubspot:hover { background: #f05a35; border-color: #f05a35; }
+  .btn-hubspot:disabled { background: #ffb8a8; border-color: #ffb8a8; cursor: not-allowed; transform: none; }
+
+  .btn-small { font-size: 12px; padding: 5px 12px; }
+
+  .api-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 6px;
+  }
+
+  .api-row > div:first-child { flex: 1; }
+
+  .key-saved {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #1a7a45;
+    margin-top: 6px;
+  }
+
+  .key-saved-dot { width: 6px; height: 6px; background: #1a7a45; border-radius: 50%; }
+
+  .api-note { font-size: 12px; color: #999; margin-top: 6px; }
+  .api-note a { color: #1a5eb8; }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .metric { background: #f5f4f0; border-radius: 8px; padding: 12px; }
+  .metric-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .metric-value { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+  .metric-value.mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; }
+
+  .links-block {
+    border: 1px solid #e5e3dd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .links-header {
+    padding: 9px 14px;
+    background: #f5f4f0;
+    border-bottom: 1px solid #e5e3dd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .links-header span { font-size: 12px; font-weight: 600; color: #666; }
+
+  .link-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0eeea;
+  }
+
+  .link-row:last-child { border-bottom: none; }
+  .link-label { font-size: 12px; color: #888; min-width: 80px; padding-top: 1px; flex-shrink: 0; }
+
+  .link-row a {
+    font-size: 12px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: #1a5eb8;
+    word-break: break-all;
+    text-decoration: none;
+  }
+
+  .link-row a:hover { text-decoration: underline; }
+
+  .desc-box { background: #f5f4f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 1rem; }
+  .desc-label { font-size: 11px; color: #888; font-weight: 600; margin-bottom: 6px; }
+  .desc-box p { font-size: 13px; color: #333; line-height: 1.55; }
+
+  .action-row { display: flex; gap: 10px; margin-bottom: 0; }
+  .action-row button:first-child { flex: 1; }
+
+  .success-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: #edf7f1;
+    border-radius: 8px;
+    margin-bottom: 1.25rem;
+  }
+
+  .success-banner span { font-size: 13px; color: #1a7a45; font-weight: 500; }
+  .success-dot { width: 8px; height: 8px; background: #1a7a45; border-radius: 50%; flex-shrink: 0; }
+
+  .hs-section {
+    border-top: 1px solid #e5e3dd;
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+  }
+
+  .hs-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+  }
+
+  .deal-result {
+    background: #f5f4f0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  .deal-result-name { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 2px; }
+  .deal-result-meta { font-size: 12px; color: #888; }
+
+  .hs-push-row { display: flex; gap: 10px; align-items: center; }
+
+  .error-box {
+    padding: 12px 14px;
+    background: #fdf0f0;
+    border: 1px solid #f5c5c5;
+    border-radius: 8px;
+    margin-top: 1rem;
+  }
+
+  .error-box p { font-size: 13px; color: #c0392b; }
+  .error-box pre { font-size: 11px; color: #c0392b; margin-top: 6px; white-space: pre-wrap; word-break: break-all; }
+
+  .loading { text-align: center; padding: 2rem 0; }
+  .loading p { font-size: 13px; color: #888; }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid #ddd;
+    border-top-color: #888;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast {
+    display: none;
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: #edf7f1;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #1a7a45;
+  }
+
+  .toast.error-toast {
+    background: #fdf0f0;
+    color: #c0392b;
+  }
+
+  #results { display: none; }
+  #error-box { display: none; }
+  #loading-box { display: none; }
+  #hs-loading { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Steam Partner Lookup</h1>
+    <p>Auto-fill HubSpot deal fields from Steam</p>
+  </div>
+
+  <!-- API KEYS -->
+  <div class="card card-collapsible" id="keys-card">
+    <div class="card-title" onclick="toggleKeys()">
+      <span>API Keys</span>
+      <span id="keys-status" style="font-size:12px; font-weight:400; color:#1a7a45;"></span>
+    </div>
+    <div class="card-body" id="keys-body">
+      <div style="margin-bottom: 1rem;">
+        <div class="api-row">
+          <div>
+            <label for="api-key">Anthropic API key</label>
+            <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off" oninput="onKeyInput('anthropic')" />
+          </div>
+          <button class="btn-small" id="save-anthropic" onclick="saveKey('anthropic')">Save</button>
+          <button class="btn-small" id="clear-anthropic" onclick="clearKey('anthropic')" style="display:none;">Clear</button>
+        </div>
+        <div class="key-saved" id="saved-anthropic"><div class="key-saved-dot"></div><span>Saved</span></div>
+        <p class="api-note">Get a key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
+      </div>
+
+      <div>
+        <div class="api-row">
+          <div>
+            <label for="hs-key">HubSpot Private App token</label>
+            <input type="password" id="hs-key" placeholder="pat-na1-..." autocomplete="off" oninput="onKeyInput('hubspot')" />
+          </div>
+          <button class="btn-small" id="save-hubspot" onclick="saveKey('hubspot')">Save</button>
+          <button class="btn-small" id="clear-hubspot" onclick="clearKey('hubspot')" style="display:none;">Clear</button>
+        </div>
+        <div class="key-saved" id="saved-hubspot"><div class="key-saved-dot"></div><span>Saved</span></div>
+        <p class="api-note">Settings → Integrations → Private Apps in HubSpot</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME LOOKUP -->
+  <div class="card">
+    <div class="card-title">Game lookup</div>
+    <div class="input-row">
+      <div>
+        <label for="dev-name">Developer / Studio name</label>
+        <input type="text" id="dev-name" placeholder="e.g. Trinket Studios" />
+      </div>
+      <div>
+        <label for="game-title">Game title</label>
+        <input type="text" id="game-title" placeholder="e.g. Battle Chef Brigade" />
+      </div>
+    </div>
+    <button class="btn-primary" id="search-btn" onclick="runSearch()">Look up on Steam</button>
+
+    <div id="loading-box" class="loading">
+      <p><span class="spinner"></span>Searching Steam...</p>
+    </div>
+
+    <div id="error-box" class="error-box">
+      <p id="error-msg"></p>
+      <pre id="error-detail" style="display:none;"></pre>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="card">
+    <div class="success-banner">
+      <div class="success-dot"></div>
+      <span id="match-label"></span>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">App ID</div>
+        <div class="metric-value mono" id="f-appid"></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Publishing status</div>
+        <div class="metric-value" id="f-status"></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Launch date</div>
+        <div class="metric-value" id="f-launch"></div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Developer</div>
+        <div class="metric-value" id="f-dev" style="font-size:13px;"></div>
+      </div>
+    </div>
+
+    <div class="links-block">
+      <div class="links-header">
+        <span>HubSpot-ready links</span>
+        <button class="btn-small" onclick="copyAll()">Copy all fields</button>
+      </div>
+      <div class="link-row">
+        <span class="link-label">Steam link</span>
+        <a id="f-steam" href="#" target="_blank"></a>
+      </div>
+      <div class="link-row">
+        <span class="link-label">SteamDB link</span>
+        <a id="f-steamdb" href="#" target="_blank"></a>
+      </div>
+      <div class="link-row">
+        <span class="link-label">VG Insights</span>
+        <a id="f-vgi" href="#" target="_blank"></a>
+      </div>
+    </div>
+
+    <div class="desc-box">
+      <div class="desc-label">Short description</div>
+      <p id="f-desc"></p>
+    </div>
+
+    <div class="action-row">
+      <button onclick="copyHubspotBlock()">Copy as note</button>
+      <button onclick="clearAll()">New search</button>
+    </div>
+
+    <div class="toast" id="copy-toast">Copied to clipboard</div>
+
+    <!-- HUBSPOT PUSH SECTION -->
+    <div class="hs-section">
+      <div class="hs-section-title">Push to HubSpot</div>
+
+      <div class="input-row" style="margin-bottom: 12px;">
+        <div>
+          <label for="hs-deal-search">Search deal by game title</label>
+          <input type="text" id="hs-deal-search" placeholder="e.g. Battle Chef Brigade" />
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button style="width:100%;" onclick="searchDeal()">Find deal</button>
+        </div>
+      </div>
+
+      <div id="hs-loading" class="loading" style="padding: 1rem 0;">
+        <p><span class="spinner"></span><span id="hs-loading-msg">Searching HubSpot...</span></p>
+      </div>
+
+      <div class="deal-result" id="deal-result">
+        <div class="deal-result-name" id="deal-result-name"></div>
+        <div class="deal-result-meta" id="deal-result-meta"></div>
+      </div>
+
+      <div id="hs-push-row" class="hs-push-row" style="display:none;">
+        <button class="btn-hubspot" onclick="pushToHubspot()">Push to this deal</button>
+        <button onclick="clearDealSearch()">Cancel</button>
+      </div>
+
+      <div class="toast" id="hs-success-toast">Successfully updated HubSpot deal</div>
+      <div class="toast error-toast" id="hs-error-toast"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const PIPELINE_ID = '791542381';
+  const HS_FIELDS = {
+    steam_app_id: d => d.appId,
+    publishing_status: d => d.publishingStatus,
+    steam_link: d => d.steamLink,
+    steamdb_link: d => d.steamDbLink,
+    vg_insights__sensor_tower_: d => d.vgiLink,
+    launch_date: d => d.launchDate !== '--' ? new Date(d.launchDate).getTime() : null,
+  };
+
+  let currentData = null;
+  let currentDeal = null;
+
+  // ── Key management ──────────────────────────────────────────────
+  const KEYS = { anthropic: 'ovr_anthropic_key', hubspot: 'ovr_hubspot_key' };
+
+  function loadSavedKeys() {
+    ['anthropic', 'hubspot'].forEach(k => {
+      const saved = localStorage.getItem(KEYS[k]);
+      if (saved) {
+        document.getElementById(k === 'anthropic' ? 'api-key' : 'hs-key').value = saved;
+        document.getElementById('saved-' + k).style.display = 'flex';
+        document.getElementById('save-' + k).style.display = 'none';
+        document.getElementById('clear-' + k).style.display = 'inline-block';
+      }
+    });
+    updateKeysStatus();
+  }
+
+  function saveKey(k) {
+    const val = document.getElementById(k === 'anthropic' ? 'api-key' : 'hs-key').value.trim();
+    if (!val) return;
+    localStorage.setItem(KEYS[k], val);
+    document.getElementById('saved-' + k).style.display = 'flex';
+    document.getElementById('save-' + k).style.display = 'none';
+    document.getElementById('clear-' + k).style.display = 'inline-block';
+    updateKeysStatus();
+  }
+
+  function clearKey(k) {
+    localStorage.removeItem(KEYS[k]);
+    document.getElementById(k === 'anthropic' ? 'api-key' : 'hs-key').value = '';
+    document.getElementById('saved-' + k).style.display = 'none';
+    document.getElementById('save-' + k).style.display = 'inline-block';
+    document.getElementById('clear-' + k).style.display = 'none';
+    updateKeysStatus();
+  }
+
+  function onKeyInput(k) {
+    if (!localStorage.getItem(KEYS[k])) {
+      document.getElementById('saved-' + k).style.display = 'none';
+      document.getElementById('save-' + k).style.display = 'inline-block';
+      document.getElementById('clear-' + k).style.display = 'none';
+    }
+  }
+
+  function updateKeysStatus() {
+    const aOk = !!localStorage.getItem(KEYS.anthropic);
+    const hOk = !!localStorage.getItem(KEYS.hubspot);
+    const el = document.getElementById('keys-status');
+    if (aOk && hOk) { el.textContent = '✓ Both keys saved'; el.style.color = '#1a7a45'; }
+    else if (aOk || hOk) { el.textContent = '⚠ One key missing'; el.style.color = '#b07d00'; }
+    else { el.textContent = ''; }
+  }
+
+  function toggleKeys() {
+    const body = document.getElementById('keys-body');
+    const title = document.querySelector('#keys-card .card-title');
+    const open = body.classList.toggle('open');
+    title.classList.toggle('open', open);
+  }
+
+  // ── Steam lookup ─────────────────────────────────────────────────
+  async function runSearch() {
+    const apiKey = document.getElementById('api-key').value.trim();
+    const dev = document.getElementById('dev-name').value.trim();
+    const game = document.getElementById('game-title').value.trim();
+
+    if (!apiKey) { showError('Please enter your Anthropic API key in the API Keys section above.'); return; }
+    if (!game) { showError('Please enter a game title.'); return; }
+
+    hideAll();
+    document.getElementById('loading-box').style.display = 'block';
+    document.getElementById('search-btn').disabled = true;
+
+    const prompt = `Find the Steam store page for this game and return ONLY a raw JSON object — no markdown fences, no explanation, just the JSON.
+
+Developer: ${dev || 'unknown'}
+Game: ${game}
+
+Use web search to find the exact Steam store URL, then extract the numeric App ID from it.
+
+Return exactly this JSON structure:
+{"found":true,"gameName":"exact Steam title","appId":"numeric id","publishingStatus":"Released or Wishlist or Early Access","launchDate":"date string or --","developer":"studio name from Steam","shortDescription":"under 180 chars","steamLink":"https://store.steampowered.com/app/APPID/SLUG/","steamDbLink":"https://steamdb.info/app/APPID/","vgiLink":"https://app.sensortower.com/vgi/game/slug-with-hyphens"}
+
+If not found: {"found":false}`;
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!resp.ok) throw new Error(`API error ${resp.status}: ${await resp.text()}`);
+
+      const data = await resp.json();
+      const allText = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      if (!allText) throw new Error('No text in response');
+
+      const jsonMatch = allText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON found: ' + allText.substring(0, 300));
+
+      const parsed = JSON.parse(jsonMatch[0]);
+      document.getElementById('loading-box').style.display = 'none';
+      document.getElementById('search-btn').disabled = false;
+
+      if (!parsed.found) {
+        showError(`Could not find "${game}" on Steam. Try checking the spelling or adding the developer name.`);
+        return;
+      }
+
+      currentData = parsed;
+
+      // Pre-fill deal search with game title
+      document.getElementById('hs-deal-search').value = parsed.gameName;
+
+      populateResults();
+
+    } catch (e) {
+      document.getElementById('loading-box').style.display = 'none';
+      document.getElementById('search-btn').disabled = false;
+      showError('Lookup failed — see details below.');
+      document.getElementById('error-detail').textContent = e.message;
+      document.getElementById('error-detail').style.display = 'block';
+    }
+  }
+
+  function populateResults() {
+    const d = currentData;
+    document.getElementById('match-label').textContent = 'Matched: "' + d.gameName + '"';
+    document.getElementById('f-appid').textContent = d.appId;
+    document.getElementById('f-status').textContent = d.publishingStatus;
+    document.getElementById('f-launch').textContent = d.launchDate;
+    document.getElementById('f-dev').textContent = d.developer;
+    const s = document.getElementById('f-steam'); s.textContent = d.steamLink; s.href = d.steamLink;
+    const sd = document.getElementById('f-steamdb'); sd.textContent = d.steamDbLink; sd.href = d.steamDbLink;
+    const v = document.getElementById('f-vgi'); v.textContent = d.vgiLink; v.href = d.vgiLink;
+    document.getElementById('f-desc').textContent = d.shortDescription;
+    document.getElementById('results').style.display = 'block';
+  }
+
+  // ── HubSpot deal search ──────────────────────────────────────────
+  async function searchDeal() {
+    const hsKey = document.getElementById('hs-key').value.trim();
+    const query = document.getElementById('hs-deal-search').value.trim();
+
+    if (!hsKey) { showHsError('Please enter your HubSpot token in the API Keys section above.'); return; }
+    if (!query) { showHsError('Please enter a deal name to search.'); return; }
+
+    clearDealSearch();
+    document.getElementById('hs-loading').style.display = 'block';
+    document.getElementById('hs-loading-msg').textContent = 'Searching HubSpot...';
+
+    try {
+      // Search deals by name within our pipeline
+      const resp = await fetch('https://api.hubapi.com/crm/v3/objects/deals/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + hsKey
+        },
+        body: JSON.stringify({
+          filterGroups: [{
+            filters: [
+              { propertyName: 'dealname', operator: 'CONTAINS_TOKEN', value: query },
+              { propertyName: 'pipeline', operator: 'EQ', value: PIPELINE_ID }
+            ]
+          }],
+          properties: ['dealname', 'dealstage', 'pipeline', 'closedate'],
+          limit: 5
+        })
+      });
+
+      const data = await resp.json();
+      document.getElementById('hs-loading').style.display = 'none';
+
+      if (!resp.ok) throw new Error(data.message || `HubSpot error ${resp.status}`);
+
+      if (!data.results || data.results.length === 0) {
+        showHsError(`No deals found matching "${query}" in your pipeline. Check the deal name in HubSpot.`);
+        return;
+      }
+
+      const deal = data.results[0];
+      currentDeal = deal;
+
+      const dealResult = document.getElementById('deal-result');
+      document.getElementById('deal-result-name').textContent = deal.properties.dealname;
+      document.getElementById('deal-result-meta').textContent = 'Deal ID: ' + deal.id + (deal.properties.dealstage ? ' · Stage: ' + deal.properties.dealstage : '');
+      dealResult.style.display = 'block';
+      document.getElementById('hs-push-row').style.display = 'flex';
+
+    } catch (e) {
+      document.getElementById('hs-loading').style.display = 'none';
+      showHsError('HubSpot search failed: ' + e.message);
+    }
+  }
+
+  async function pushToHubspot() {
+    if (!currentData || !currentDeal) return;
+
+    const hsKey = document.getElementById('hs-key').value.trim();
+    document.getElementById('hs-loading').style.display = 'block';
+    document.getElementById('hs-loading-msg').textContent = 'Pushing to HubSpot...';
+    document.getElementById('hs-push-row').style.display = 'none';
+
+    // Build properties object — only include non-null values
+    const properties = {};
+    for (const [field, getter] of Object.entries(HS_FIELDS)) {
+      const val = getter(currentData);
+      if (val !== null && val !== undefined && val !== '--') {
+        properties[field] = String(val);
+      }
+    }
+
+    try {
+      const resp = await fetch(`https://api.hubapi.com/crm/v3/objects/deals/${currentDeal.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + hsKey
+        },
+        body: JSON.stringify({ properties })
+      });
+
+      const data = await resp.json();
+      document.getElementById('hs-loading').style.display = 'none';
+
+      if (!resp.ok) throw new Error(data.message || `HubSpot error ${resp.status}`);
+
+      const toast = document.getElementById('hs-success-toast');
+      toast.textContent = '✓ Updated "' + currentDeal.properties.dealname + '" in HubSpot';
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 4000);
+
+      clearDealSearch();
+
+    } catch (e) {
+      document.getElementById('hs-loading').style.display = 'none';
+      document.getElementById('hs-push-row').style.display = 'flex';
+      showHsError('Push failed: ' + e.message);
+    }
+  }
+
+  function clearDealSearch() {
+    currentDeal = null;
+    document.getElementById('deal-result').style.display = 'none';
+    document.getElementById('hs-push-row').style.display = 'none';
+    document.getElementById('hs-error-toast').style.display = 'none';
+    document.getElementById('hs-success-toast').style.display = 'none';
+  }
+
+  function showHsError(msg) {
+    const el = document.getElementById('hs-error-toast');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  // ── Clipboard ────────────────────────────────────────────────────
+  function copyAll() {
+    if (!currentData) return;
+    const d = currentData;
+    const text = ['Game: ' + d.gameName, 'App ID: ' + d.appId, 'Publishing Status: ' + d.publishingStatus,
+      'Launch Date: ' + d.launchDate, 'Developer: ' + d.developer, 'Steam Link: ' + d.steamLink,
+      'SteamDB Link: ' + d.steamDbLink, 'VG Insights: ' + d.vgiLink, 'Description: ' + d.shortDescription].join('\n');
+    navigator.clipboard.writeText(text).then(showCopyToast);
+  }
+
+  function copyHubspotBlock() {
+    if (!currentData) return;
+    const d = currentData;
+    const text = '--- Partner Data (auto-filled via Steam lookup) ---\nGame: ' + d.gameName + '\nApp ID: ' + d.appId +
+      '\nPublishing Status: ' + d.publishingStatus + '\nLaunch Date: ' + d.launchDate +
+      '\nDeveloper: ' + d.developer + '\nSteam Link: ' + d.steamLink +
+      '\nSteamDB Link: ' + d.steamDbLink + '\nVG Insights: ' + d.vgiLink + '\nDescription: ' + d.shortDescription;
+    navigator.clipboard.writeText(text).then(showCopyToast);
+  }
+
+  function showCopyToast() {
+    const t = document.getElementById('copy-toast');
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 2500);
+  }
+
+  // ── Misc ─────────────────────────────────────────────────────────
+  function clearAll() {
+    hideAll();
+    document.getElementById('dev-name').value = '';
+    document.getElementById('game-title').value = '';
+    document.getElementById('hs-deal-search').value = '';
+    currentData = null;
+    clearDealSearch();
+  }
+
+  function hideAll() {
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('error-box').style.display = 'none';
+    document.getElementById('loading-box').style.display = 'none';
+    document.getElementById('error-detail').style.display = 'none';
+    document.getElementById('copy-toast').style.display = 'none';
+  }
+
+  function showError(msg) {
+    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-box').style.display = 'block';
+  }
+
+  document.getElementById('game-title').addEventListener('keydown', e => { if (e.key === 'Enter') runSearch(); });
+  document.getElementById('dev-name').addEventListener('keydown', e => { if (e.key === 'Enter') runSearch(); });
+  document.getElementById('hs-deal-search').addEventListener('keydown', e => { if (e.key === 'Enter') searchDeal(); });
+
+  loadSavedKeys();
+</script>
+</body>
+</html>
