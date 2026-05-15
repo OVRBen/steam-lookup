@@ -547,16 +547,8 @@
     document.getElementById('loading-box').style.display = 'block';
     document.getElementById('search-btn').disabled = true;
 
-    const prompt = `Find the Steam store page for this game and return ONLY a raw JSON object — no markdown fences, no explanation, just the JSON.
-
-Developer: ${dev || 'unknown'}
-Game: ${game}
-
-Use web search to find the exact Steam store URL, then extract the numeric App ID from it.
-
-Return exactly this JSON structure:
-{"found":true,"gameName":"exact Steam title","appId":"numeric id","publishingStatus":"Released or Wishlist or Early Access","launchDate":"date string or --","developer":"studio name from Steam","shortDescription":"under 180 chars","steamLink":"https://store.steampowered.com/app/APPID/SLUG/","steamDbLink":"https://steamdb.info/app/APPID/","vgiLink":"https://app.sensortower.com/vgi/game/slug-with-hyphens"}
-
+    const prompt = `Search Steam for: ${game}${dev ? ' by ' + dev : ''}. Return ONLY JSON, no markdown.
+{"found":true,"gameName":"","appId":"","publishingStatus":"Released|Wishlist|Early Access","launchDate":"date or --","developer":"","shortDescription":"<150chars","steamLink":"https://store.steampowered.com/app/ID/SLUG/","steamDbLink":"https://steamdb.info/app/ID/","vgiLink":"https://app.sensortower.com/vgi/game/slug"}
 If not found: {"found":false}`;
 
     try {
@@ -570,7 +562,7 @@ If not found: {"found":false}`;
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
+          max_tokens: 400,
           tools: [{ type: 'web_search_20250305', name: 'web_search' }],
           messages: [{ role: 'user', content: prompt }]
         })
