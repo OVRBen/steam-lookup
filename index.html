@@ -443,7 +443,18 @@
         <button onclick="clearDealSearch()">Cancel</button>
       </div>
 
-      <div class="toast" id="hs-success-toast">Successfully updated HubSpot deal</div>
+      <div id="hs-success-banner" style="display:none; margin-top:1rem; padding: 14px 16px; background: #edf7f1; border: 1.5px solid #1a7a45; border-radius: 10px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <div style="width:20px; height:20px; background:#1a7a45; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <span style="color:#fff; font-size:13px; font-weight:700;">&#10003;</span>
+          </div>
+          <span id="hs-success-title" style="font-size:14px; font-weight:600; color:#1a7a45;"></span>
+        </div>
+        <div id="hs-success-fields" style="padding-left:30px; display:flex; flex-direction:column; gap:4px;"></div>
+        <div style="padding-left:30px; margin-top:10px;">
+          <button onclick="dismissSuccess()" style="font-size:12px; padding:4px 12px; color:#1a7a45; border-color:#1a7a45;">Dismiss</button>
+        </div>
+      </div>
       <div class="toast error-toast" id="hs-error-toast"></div>
     </div>
   </div>
@@ -697,12 +708,33 @@ If not found: {"found":false}`;
 
       if (!resp.ok) throw new Error(data.message || `HubSpot error ${resp.status}`);
 
-      const toast = document.getElementById('hs-success-toast');
-      toast.textContent = '✓ Updated "' + currentDeal.properties.dealname + '" in HubSpot';
-      toast.style.display = 'block';
-      setTimeout(() => { toast.style.display = 'none'; }, 4000);
+      // Show success banner with field list
+      const banner = document.getElementById('hs-success-banner');
+      document.getElementById('hs-success-title').textContent = 'HubSpot updated: "' + currentDeal.properties.dealname + '"';
+      const fieldsList = document.getElementById('hs-success-fields');
+      fieldsList.innerHTML = '';
+      const fieldLabels = {
+        steam_app_id: 'App ID',
+        publishing_status: 'Publishing Status',
+        steam_link: 'Steam Link',
+        steamdb_link: 'SteamDB Link',
+        vg_insights__sensor_tower_: 'VG Insights Link',
+        launch_date: 'Launch Date'
+      };
+      for (const [field, getter] of Object.entries(HS_FIELDS)) {
+        const val = getter(currentData);
+        if (val !== null && val !== undefined && val !== '--') {
+          const row = document.createElement('div');
+          row.style.cssText = 'font-size:12px; color:#1a7a45;';
+          row.textContent = '✓ ' + (fieldLabels[field] || field);
+          fieldsList.appendChild(row);
+        }
+      }
+      banner.style.display = 'block';
 
-      clearDealSearch();
+      // Hide deal search UI but keep banner
+      document.getElementById('deal-result').style.display = 'none';
+      document.getElementById('hs-push-row').style.display = 'none';
 
     } catch (e) {
       document.getElementById('hs-loading').style.display = 'none';
@@ -716,7 +748,12 @@ If not found: {"found":false}`;
     document.getElementById('deal-result').style.display = 'none';
     document.getElementById('hs-push-row').style.display = 'none';
     document.getElementById('hs-error-toast').style.display = 'none';
-    document.getElementById('hs-success-toast').style.display = 'none';
+    document.getElementById('hs-success-banner').style.display = 'none';
+  }
+
+  function dismissSuccess() {
+    document.getElementById('hs-success-banner').style.display = 'none';
+    document.getElementById('hs-deal-search').value = '';
   }
 
   function showHsError(msg) {
