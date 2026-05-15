@@ -458,7 +458,7 @@
     steam_link: d => d.steamLink,
     steamdb_link: d => d.steamDbLink,
     vg_insights__sensor_tower_: d => d.vgiLink,
-    launch_date: d => d.launchDate !== '--' ? new Date(d.launchDate).getTime() : null,
+    launch_date: d => { if (!d.launchDate || d.launchDate === '--') return null; const ts = new Date(d.launchDate).getTime(); return isNaN(ts) ? null : ts; },
   };
 
   let currentData = null;
